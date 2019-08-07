@@ -2,9 +2,11 @@ import requests
 import time
 import json
 from bs4 import BeautifulSoup
-import distinct
 import re
 import openpyxl
+from openpyxl import Workbook
+import os
+import datetime
 
 class Bilibili:
     def __init__(self,cookie):
@@ -135,7 +137,7 @@ class Bilibili:
                 a["uid"]=Bilibili().getuid(a["author"])
                 ddata=i.find(class_="play")
                 a["play"]=ddata.string[3:len(ddata.string)]
-                a["time"]=time.asctime(time.localtime(time.time()))
+                a["time"]=datetime.datetime.now().strftime("%Y-%m-%d %X")
                 a["tag"]=Bilibili().video(a["avid"]).gettag()
             return rec_list
 
@@ -150,8 +152,19 @@ class Bilibili:
         return result[0]
         
 def excel_linker_for_recommend(list):
-    wb = openpyxl.load_workbook('C:/Users/Pancras.W/Desktop/vscode/.vscode/python/py for bilibili/recommend/recommend for bilibili.xlsx')#此处写具体文档地址
-    sheet=wb["Sheet1"]
+    try:
+        wb = openpyxl.load_workbook(os.path.dirname(__file__).replace("\\",'/')+'/recommend for bilibili.xlsx')#此处写具体文档地址
+        sheet=wb["Sheet1"]
+    except:
+        wb=Workbook()
+        sheet=wb.active
+        sheet["A1"]="avid"
+        sheet["B1"]="title"
+        sheet["C1"]="author"
+        sheet["D1"]="uid"
+        sheet["E1"]="play"
+        sheet["F1"]="time"
+        sheet["G1"]="tag"        
     for i in list:
         sheet["A"+str(sheet.max_row+1)]=i["avid"]
         sheet["B"+str(sheet.max_row)]=i["title"]
@@ -160,8 +173,8 @@ def excel_linker_for_recommend(list):
         sheet["E"+str(sheet.max_row)]=i["play"]
         sheet["F"+str(sheet.max_row)]=i["time"]
         sheet["G"+str(sheet.max_row)]=str(i["tag"])
-    wb.save('C:/Users/Pancras.W/Desktop/vscode/.vscode/python/py for bilibili/recommend/recommend for bilibili.xlsx')        
+    wb.save(os.path.dirname(__file__).replace("\\",'/')+'/recommend for bilibili.xlsx')        
     
-b=Bilibili()
-ho=b.homepage()
+bi=Bilibili()
+ho=bi.homepage()
 excel_linker_for_recommend(ho.getrecommend())
