@@ -9,14 +9,14 @@ import os
 import datetime
 
 class Bilibili:
-    def __init__(self,cookie):
-        self.cookie=cookie#单数保留字符串，复数保留字典
-        self.cookies=json.loads('{\"'+cookie.replace('=','":"').replace('; ','","')+"\"}")
-        self.__lastcall__1=0.0
+    def __init__(self,cookie=None):
+        if cookie!=None:
+            self.cookie=cookie#单数保留字符串，复数保留字典
+            self.cookies=json.loads('{\"'+cookie.replace('=','":"').replace('; ','","')+"\"}")
+            self.__lastcall__1=0.0
+        else:
+            pass
     
-    def __init__(self):
-        pass
-
     def bwait(self):
         while (time.time()-self.__lastcall__1<0.4):#每分钟最多150条，人为设置延迟
             time.sleep(0.1)#如果响应时间过长，导致间隔已超过0.4，则无需再进入此循环
@@ -136,7 +136,7 @@ class Bilibili:
                 rec_list.append(a)
                 a["uid"]=Bilibili().getuid(a["author"])
                 ddata=i.find(class_="play")
-                a["play"]=ddata.string[3:len(ddata.string)]
+                a["play"]=ddata.string[3:len(ddata.string)-1]
                 a["time"]=datetime.datetime.now().strftime("%Y-%m-%d %X")
                 a["tag"]=Bilibili().video(a["avid"]).gettag()
             return rec_list
@@ -154,7 +154,7 @@ class Bilibili:
 def excel_linker_for_recommend(list):
     try:
         wb = openpyxl.load_workbook(os.path.dirname(__file__).replace("\\",'/')+'/recommend for bilibili.xlsx')#此处写具体文档地址
-        sheet=wb["Sheet1"]
+        sheet=wb["Sheet"]
     except:
         wb=Workbook()
         sheet=wb.active
@@ -162,7 +162,7 @@ def excel_linker_for_recommend(list):
         sheet["B1"]="title"
         sheet["C1"]="author"
         sheet["D1"]="uid"
-        sheet["E1"]="play"
+        sheet["E1"]="play(w)"
         sheet["F1"]="time"
         sheet["G1"]="tag"        
     for i in list:
@@ -175,6 +175,5 @@ def excel_linker_for_recommend(list):
         sheet["G"+str(sheet.max_row)]=str(i["tag"])
     wb.save(os.path.dirname(__file__).replace("\\",'/')+'/recommend for bilibili.xlsx')        
     
-bi=Bilibili()
-ho=bi.homepage()
+ho=Bilibili().homepage()    
 excel_linker_for_recommend(ho.getrecommend())
